@@ -24,3 +24,4 @@ e.g.
 
 == Changelog ==
 v1.0.0 initial release
+v1.0.1 changes code to match new structure of availability_rules from woo bookings - fixes bug causing dropdown to be empty

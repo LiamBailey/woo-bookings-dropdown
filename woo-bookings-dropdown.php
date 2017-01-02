@@ -66,6 +66,7 @@ function wswp_booking_form_fields($fields) {
             $max = $field['max_date'];
             $now = strtotime( 'midnight', current_time( 'timestamp' ) );
             $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
+            print_r($field['availability_rules']);
             $new_fields[$i]['options'] = wswp_build_options($field['availability_rules'][$selected_resource],$max_date);
             $new_fields[$i]['class'] = array('picker-chooser');
         }
@@ -78,10 +79,10 @@ function wswp_build_options($rules,$max_date) {
     global $wswp_dates_built;
     $dates = array();
     foreach($rules as $dateset) {
-        if ($dateset[0] == "custom") {
-            $year = reset(array_keys($dateset[1]));
-            $month = reset(array_keys($dateset[1][$year]));
-            $day = reset(array_keys($dateset[1][$year][$month]));
+        if ($dateset['type'] == "custom") {
+            $year = reset(array_keys($dateset['range']));
+            $month = reset(array_keys($dateset['range'][$year]));
+            $day = reset(array_keys($dateset['range'][$year][$month]));
             $dtime = strtotime($year."-".$month."-".$day);
             if ($dtime <= $max_date-1) {
                 $dates[$dtime] = date("m/d/Y",$dtime);

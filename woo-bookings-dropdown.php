@@ -2,7 +2,11 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
+<<<<<<< HEAD
 Version: 1.0.2
+=======
+Version: 1.0.1
+>>>>>>> 3278afa0b7b3e34b8c392139163ff6bcff520e9d
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 */

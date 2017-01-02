@@ -2,11 +2,7 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-<<<<<<< HEAD
-Version: 1.0.2
-=======
-Version: 1.0.1
->>>>>>> 3278afa0b7b3e34b8c392139163ff6bcff520e9d
+Version: 1.0.3
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 */
@@ -70,7 +66,6 @@ function wswp_booking_form_fields($fields) {
             $max = $field['max_date'];
             $now = strtotime( 'midnight', current_time( 'timestamp' ) );
             $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
-            print_r($field['availability_rules']);
             $new_fields[$i]['options'] = wswp_build_options($field['availability_rules'][$selected_resource],$max_date);
             $new_fields[$i]['class'] = array('picker-chooser');
         }

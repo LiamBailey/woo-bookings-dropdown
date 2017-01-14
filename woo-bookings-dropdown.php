@@ -2,7 +2,7 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-Version: 1.0.3
+Version: 1.0.4
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 */
@@ -78,16 +78,20 @@ function wswp_build_options($rules,$max_date) {
     global $wswp_dates_built;
     $dates = array();
     foreach($rules as $dateset) {
-        if ($dateset['type'] == "custom") {
+        if ($dateset[0] == "custom") {
+             $year = reset(array_keys($dateset[1]));
+             $month = reset(array_keys($dateset[1][$year]));
+             $day = reset(array_keys($dateset[1][$year][$month]));
+        }
+        else if ($dateset['type'] == "custom") {
             $year = reset(array_keys($dateset['range']));
             $month = reset(array_keys($dateset['range'][$year]));
             $day = reset(array_keys($dateset['range'][$year][$month]));
-            $dtime = strtotime($year."-".$month."-".$day);
-            if ($dtime <= $max_date-1) {
-                $dates[$dtime] = date("m/d/Y",$dtime);
-            }
         }
-
+        $dtime = strtotime($year."-".$month."-".$day);
+        if ($dtime <= $max_date-1) {
+            $dates[$dtime] = date("m/d/Y",$dtime);
+        }
     }
     ksort($dates);
     foreach($dates as $key => $date) {

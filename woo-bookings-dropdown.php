@@ -9,11 +9,11 @@ License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
-add_action('wp_ajax_wswp_refresh_dates','wswp_refresh_dates');
-add_action('wp_ajax_nopriv_wswp_refresh_dates','wswp_refresh_dates');
+add_action('wp_ajax_wswp_refresh_dates', 'wswp_refresh_dates');
+add_action('wp_ajax_nopriv_wswp_refresh_dates', 'wswp_refresh_dates');
 
 function wswp_refresh_dates() {
-    check_ajax_referer('woo-bookings-dropdown-refreshing-dates','security');
+    check_ajax_referer('woo-bookings-dropdown-refreshing-dates', 'security');
     $product = wc_get_product($_REQUEST['product_id']);
     $booking_form = new WC_Booking_Form($product);
     switch ( $product->get_duration_unit() ) {
@@ -39,7 +39,7 @@ function wswp_refresh_dates() {
     $max = $product->get_max_date();
     $now = strtotime( 'midnight', current_time( 'timestamp' ) );
     $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
-    $dates = wswp_build_options($rules,$field,$max_date);
+    $dates = wswp_build_options($rules, $field, $max_date);
     if (!empty($dates)) {
         $response = array(
             'success' => true,
@@ -49,18 +49,18 @@ function wswp_refresh_dates() {
     }
 }
 
-add_action('wp_enqueue_scripts','wswp_enqueue_script');
+add_action('wp_enqueue_scripts', 'wswp_enqueue_script');
 
 function wswp_enqueue_script() {
     wp_enqueue_script('woo-bookings-dropdown',plugins_url('js/woo-bookings-dropdown.js',__FILE__),array('jquery'));
-    wp_localize_script('woo-bookings-dropdown','WooBookingsDropdown',array(
+    wp_localize_script('woo-bookings-dropdown', 'WooBookingsDropdown', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'secure' => wp_create_nonce('woo-bookings-dropdown-refreshing-dates')
     ));
 }
 
 $wswp_dates_built = false;
-add_filter('booking_form_fields','wswp_booking_form_fields');
+add_filter('booking_form_fields', 'wswp_booking_form_fields');
 
 function wswp_booking_form_fields($fields) {
 
@@ -73,7 +73,7 @@ function wswp_booking_form_fields($fields) {
         if ($field['type'] == "select") {
             $selected_resource = reset(array_keys($field['options']));
             if ($reset_options !== false) {
-                $new_fields[$reset_options]['options'] = wswp_build_options($field['availability_rules'][$selected_resource],$field);
+                $new_fields[$reset_options]['options'] = wswp_build_options($field['availability_rules'][$selected_resource], $field);
             }
         }
         if ($field['type'] == "date-picker" && $wswp_dates_built === false)
@@ -117,25 +117,25 @@ function wswp_build_options($rules, $field, $max_date) {
                 if (isset($field['fully_booked_days'][$js_date]))
                     continue;
                 if ($dtime <= $max_date-1) {
-                    $dates[$dtime] = date("d/m/Y",$dtime);
+                    $dates[$dtime] = date("d/m/Y", $dtime);
                 }
         }
     }
     ksort($dates);
     foreach($dates as $key => $date) {
-        $dates[date("Y-m-d",$key)] = $date;
+        $dates[date("Y-m-d", $key)] = $date;
         unset($dates[$key]);
     }
     $wswp_dates_built = true;
     return array('' => 'Please Select') + $dates;
 }
 
-add_action('wp_footer','wswp_css_js');
+add_action('wp_footer', 'wswp_css_js');
 
 function wswp_css_js() {
     //adding in footer as not enough to justify new stylesheet and js file
     ?><style type="text/css">
-        .picker-hidden .picker,.picker-hidden legend {
+        .picker-hidden .picker, .picker-hidden legend {
             display:none;
         }
         </style>

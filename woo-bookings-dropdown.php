@@ -2,25 +2,44 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-<<<<<<< HEAD
-Version: 1.0.4
-=======
-Version: 1.0.3
->>>>>>> 07a35f9d3efdb8f902ae52a54a4077b361052925
+Version: 1.0.5
 Author: Webby Scots
 Author URI: http://webbyscots.com/
+License: GNU General Public License v3.0
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
+
 add_action('wp_ajax_wswp_refresh_dates','wswp_refresh_dates');
 add_action('wp_ajax_nopriv_wswp_refresh_dates','wswp_refresh_dates');
 
 function wswp_refresh_dates() {
     check_ajax_referer('woo-bookings-dropdown-refreshing-dates','security');
     $product = wc_get_product($_REQUEST['product_id']);
+    $booking_form = new WC_Booking_Form($product);
+    switch ( $product->get_duration_unit() ) {
+        case 'month' :
+            include_once( 'class-wc-booking-form-month-picker.php' );
+            $picker = new WC_Booking_Form_Month_Picker( $this );
+            break;
+        case 'day' :
+        case 'night' :
+            include_once( 'class-wc-booking-form-date-picker.php' );
+            $picker = new WC_Booking_Form_Date_Picker( $this );
+            break;
+        case 'minute' :
+        case 'hour' :
+            include_once( 'class-wc-booking-form-datetime-picker.php' );
+            $picker = new WC_Booking_Form_Datetime_Picker( $this );
+            break;
+        default :
+            break;
+    }
+    $field = $picker->get_args();
     $rules = $product->get_availability_rules($_REQUEST['resource_id']);
     $max = $product->get_max_date();
     $now = strtotime( 'midnight', current_time( 'timestamp' ) );
     $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
-    $dates = wswp_build_options($rules,$max_date);
+    $dates = wswp_build_options($rules,$field,$max_date);
     if (!empty($dates)) {
         $response = array(
             'success' => true,
@@ -54,7 +73,7 @@ function wswp_booking_form_fields($fields) {
         if ($field['type'] == "select") {
             $selected_resource = reset(array_keys($field['options']));
             if ($reset_options !== false) {
-                $new_fields[$reset_options]['options'] = wswp_build_options($field['availability_rules'][$selected_resource]);
+                $new_fields[$reset_options]['options'] = wswp_build_options($field['availability_rules'][$selected_resource],$field);
             }
         }
         if ($field['type'] == "date-picker" && $wswp_dates_built === false)
@@ -70,7 +89,7 @@ function wswp_booking_form_fields($fields) {
             $max = $field['max_date'];
             $now = strtotime( 'midnight', current_time( 'timestamp' ) );
             $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
-            $new_fields[$i]['options'] = wswp_build_options($field['availability_rules'][$selected_resource],$max_date);
+            $new_fields[$i]['options'] = wswp_build_options($field['availability_rules'][$selected_resource], $field, $max_date);
             $new_fields[$i]['class'] = array('picker-chooser');
         }
         $i++;
@@ -78,23 +97,28 @@ function wswp_booking_form_fields($fields) {
     return $new_fields;
 }
 
-function wswp_build_options($rules,$max_date) {
+function wswp_build_options($rules, $field, $max_date) {
     global $wswp_dates_built;
     $dates = array();
     foreach($rules as $dateset) {
         if ($dateset[0] == "custom") {
              $year = reset(array_keys($dateset[1]));
              $month = reset(array_keys($dateset[1][$year]));
-             $day = reset(array_keys($dateset[1][$year][$month]));
+             $days = array_keys($dateset[1][$year][$month]);
         }
         else if ($dateset['type'] == "custom") {
             $year = reset(array_keys($dateset['range']));
             $month = reset(array_keys($dateset['range'][$year]));
-            $day = reset(array_keys($dateset['range'][$year][$month]));
+            $days = array_keys($dateset['range'][$year][$month]);
         }
-        $dtime = strtotime($year."-".$month."-".$day);
-        if ($dtime <= $max_date-1) {
-            $dates[$dtime] = date("m/d/Y",$dtime);
+        foreach($days as $day) {
+                $dtime = strtotime($year."-".$month."-".$day);
+                $js_date = date( 'Y-n-j', $dtime );
+                if (isset($field['fully_booked_days'][$js_date]))
+                    continue;
+                if ($dtime <= $max_date-1) {
+                    $dates[$dtime] = date("d/m/Y",$dtime);
+                }
         }
     }
     ksort($dates);

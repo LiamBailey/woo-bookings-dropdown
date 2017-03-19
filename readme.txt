@@ -23,8 +23,23 @@ e.g.
 1. Now your single product pages will show available dates in a dropdown not a datepicker
 
 == Changelog ==
-1.0.0 initial release
-1.0.1 changes code to match new structure of availability_rules from woo bookings - fixes bug causing dropdown to be empty
-1.0.2 bump version number due to svn rebase error
-1.0.3 fix inadvertent output bug
-1.0.4 Makes previous *fix* from 1.0.1-1.0.3 backwards compatible
+
+= 1.0.0 =
+* Initial release
+
+= 1.0.1 =
+* Changes code to match new structure of availability_rules from WooCommerce Bookings
+* Bugfix: causing dropdown to be incrorrectly empty
+
+= 1.0.2 =
+* Bump version number due to svn rebase error
+
+= 1.0.3 =
+* Bugfix inadvertent output bug
+
+= 1.0.4 =
+*  Makes previous *fix* from 1.0.1-1.0.3 backwards compatible
+
+= 1.0.5 =
+* Bugfix: dropdown now shows all days in each range
+* Bugfix: fully booked days no longer show in dropdown

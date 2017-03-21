@@ -43,3 +43,8 @@ e.g.
 = 1.0.5 =
 * Bugfix: dropdown now shows all days in each range
 * Bugfix: fully booked days no longer show in dropdown
+
+= 1.0.6 =
+* As dropdown only works with date range based availability, make default calendar show on products with other range types
+* Changes date format for user view to more readable format (avoiding regional ponderings)
+* Adds string internationalization including dates

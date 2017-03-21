@@ -2,7 +2,7 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-Version: 1.0.5
+Version: 1.0.6
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 License: GNU General Public License v3.0
@@ -78,6 +78,12 @@ function wswp_booking_form_fields($fields) {
         }
         if ($field['type'] == "date-picker" && $wswp_dates_built === false)
         {
+            $max = $field['max_date'];
+            $now = strtotime( 'midnight', current_time( 'timestamp' ) );
+            $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
+            $avail_dates = wswp_build_options($field['availability_rules'][$selected_resource], $field, $max_date);
+            if (!$avail_dates)
+                return $fields;
             $s = $i;
             $new_fields[$s]['class'] = array('picker-hidden');
             $i++;
@@ -86,10 +92,8 @@ function wswp_booking_form_fields($fields) {
             if ($selected_resource == 0) {
                 $reset_options = $i;
             }
-            $max = $field['max_date'];
-            $now = strtotime( 'midnight', current_time( 'timestamp' ) );
-            $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
-            $new_fields[$i]['options'] = wswp_build_options($field['availability_rules'][$selected_resource], $field, $max_date);
+
+            $new_fields[$i]['options'] = $avail_dates;
             $new_fields[$i]['class'] = array('picker-chooser');
         }
         $i++;
@@ -100,6 +104,7 @@ function wswp_booking_form_fields($fields) {
 function wswp_build_options($rules, $field, $max_date) {
     global $wswp_dates_built;
     $dates = array();
+    $non_date_ranges = false;
     foreach($rules as $dateset) {
         if ($dateset[0] == "custom") {
              $year = reset(array_keys($dateset[1]));
@@ -111,13 +116,16 @@ function wswp_build_options($rules, $field, $max_date) {
             $month = reset(array_keys($dateset['range'][$year]));
             $days = array_keys($dateset['range'][$year][$month]);
         }
+        else {
+            $non_date_ranges = true;
+        }
         foreach($days as $day) {
                 $dtime = strtotime($year."-".$month."-".$day);
                 $js_date = date( 'Y-n-j', $dtime );
                 if (isset($field['fully_booked_days'][$js_date]))
                     continue;
                 if ($dtime <= $max_date-1) {
-                    $dates[$dtime] = date("d/m/Y", $dtime);
+                    $dates[$dtime] = date_i18n("F jS, Y", $dtime);
                 }
         }
     }
@@ -127,7 +135,7 @@ function wswp_build_options($rules, $field, $max_date) {
         unset($dates[$key]);
     }
     $wswp_dates_built = true;
-    return array('' => 'Please Select') + $dates;
+    return $non_date_ranges || empty($dates) ? false : array('' => __('Please Select','woo-bookings-dropdown')) + $dates;
 }
 
 add_action('wp_footer', 'wswp_css_js');

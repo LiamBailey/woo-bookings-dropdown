@@ -48,3 +48,6 @@ e.g.
 * As dropdown only works with date range based availability, make default calendar show on products with other range types
 * Changes date format for user view to more readable format (avoiding regional ponderings)
 * Adds string internationalization including dates
+
+= 1.0.7 =
+* Bugfix: Dates in the past no longer included in the dropdown

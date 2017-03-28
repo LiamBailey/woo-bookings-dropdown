@@ -106,7 +106,6 @@ function wswp_build_options($rules, $field, $max_date) {
     $dates = array();
     $non_date_ranges = false;
     foreach($rules as $dateset) {
-        ///echo "<hr />" . print_r($dateset,true);
         if (is_int(array_keys($dateset)[0]) && $dateset[0] == "custom") {
              $years = array_keys($dateset[1]);
              $legacy = true;

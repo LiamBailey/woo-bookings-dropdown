@@ -27,7 +27,7 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 
 = 1.0.1 =
 * Changes code to match new structure of availability_rules from WooCommerce Bookings
-* Bugfix: causing dropdown to be incrorrectly empty
+* Bugfix: causing dropdown to be incorrectly empty
 
 = 1.0.2 =
 * Bump version number due to svn rebase error
@@ -49,3 +49,6 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 
 = 1.0.7 =
 * Bugfix: Dates in the past no longer included in the dropdown
+
+= 1.0.8 =
+* Improvement - prevents global availability ranges from forcing calendar to show if product has available dates itself

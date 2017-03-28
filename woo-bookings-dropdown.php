@@ -2,7 +2,7 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-Version: 1.0.7
+Version: 1.0.8
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 License: GNU General Public License v3.0
@@ -106,29 +106,37 @@ function wswp_build_options($rules, $field, $max_date) {
     $dates = array();
     $non_date_ranges = false;
     foreach($rules as $dateset) {
-        if ($dateset[0] == "custom") {
-             $year = reset(array_keys($dateset[1]));
-             $month = reset(array_keys($dateset[1][$year]));
-             $days = array_keys($dateset[1][$year][$month]);
+        ///echo "<hr />" . print_r($dateset,true);
+        if (is_int(array_keys($dateset)[0]) && $dateset[0] == "custom") {
+             $years = array_keys($dateset[1]);
+             $legacy = true;
         }
         else if ($dateset['type'] == "custom") {
-            $year = reset(array_keys($dateset['range']));
-            $month = reset(array_keys($dateset['range'][$year]));
-            $days = array_keys($dateset['range'][$year][$month]);
+            $years = array_keys($dateset['range']);
+            $legacy = false;
         }
         else {
-            $non_date_ranges = true;
+            //Use default calendar if non-date range type ranges found. Exclude global ranges but only if date-range ranges found.
+            $non_date_ranges = (empty($dates) || $dateset['level'] != "global");
         }
-        foreach($days as $day) {
-                $dtime = strtotime($year."-".$month."-".$day);
-                if ($dtime < strtotime("now"))
-                    continue;
-                $js_date = date( 'Y-n-j', $dtime );
-                if (isset($field['fully_booked_days'][$js_date]))
-                    continue;
-                if ($dtime <= $max_date-1) {
-                    $dates[$dtime] = date_i18n("F jS, Y", $dtime);
+        foreach($years as $year) {
+            $months = ($legacy) ? array_keys($dateset[1][$year]) : array_keys($dateset['range'][$year]);
+            foreach($months as $month) {
+                $days = ($legacy) ? array_keys($dateset[1][$year][$month]) : array_keys($dateset['range'][$year][$month]);
+                foreach($days as $day) {
+
+                    $dtime = strtotime($year."-".$month."-".$day);
+                    if ($dtime < strtotime("now"))
+                        continue;
+                    $js_date = date( 'Y-n-j', $dtime );
+                    if (isset($field['fully_booked_days'][$js_date]))
+                        continue;
+                    if ($dtime <= $max_date-1) {
+                        $dates[$dtime] = date_i18n("F jS, Y", $dtime);
+                    }
                 }
+            }
+
         }
     }
     ksort($dates);
@@ -137,6 +145,7 @@ function wswp_build_options($rules, $field, $max_date) {
         unset($dates[$key]);
     }
     $wswp_dates_built = true;
+    var_dump($non_date_ranges);var_dump(empty($dates));
     return $non_date_ranges || empty($dates) ? false : array('' => __('Please Select','woo-bookings-dropdown')) + $dates;
 }
 

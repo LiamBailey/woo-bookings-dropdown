@@ -12,10 +12,7 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 
 Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of available dates, with support for resources included.
 
-**Note: at present the plugin only supports Date Range ranges of availability (duration_type)** I would love to spend more time developing it
-including adding more range types etc, but my life as a freelance developer is a busy one. If you need this plugin or any of my plugins to do
-something they don't right now, including the above, then please reach out to me through my website [Webby Scots.com](https://webbyscots.com)
-and I will give you a discounted rate on the proviso the change can be released in the public version.
+**Note: at present the plugin only supports Date Range ranges of availability (duration_type)** I would love to spend more time developing it including adding more range types etc, but my life as a freelance developer is a busy one. If you need this plugin or any of my plugins to do something they don't right now, including the above, then please reach out to me through my website [Webby Scots.com](https://webbyscots.com) and I will give you a discounted rate on the proviso the change can be released in the public version.
 
 == Installation ==
 

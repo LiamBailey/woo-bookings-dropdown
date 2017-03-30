@@ -144,7 +144,6 @@ function wswp_build_options($rules, $field, $max_date) {
         unset($dates[$key]);
     }
     $wswp_dates_built = true;
-    var_dump($non_date_ranges);var_dump(empty($dates));
     return $non_date_ranges || empty($dates) ? false : array('' => __('Please Select','woo-bookings-dropdown')) + $dates;
 }
 

@@ -53,3 +53,6 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 = 1.0.8 =
 * Improvement - prevents global availability ranges from forcing calendar to show if product has available dates itself
 * Bugfix - like version 1.0.5 made multiple days show, this one will make multiple years and months in ranges show also
+
+= 1.0.9 =
+* Fix remove bool(false) bool(false) from output with apologies

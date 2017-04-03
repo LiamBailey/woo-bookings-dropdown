@@ -2,7 +2,7 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-Version: 1.0.9
+Version: 1.1.0
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 License: GNU General Public License v3.0
@@ -106,7 +106,7 @@ function wswp_build_options($rules, $field, $max_date) {
     $dates = array();
     $non_date_ranges = false;
     foreach($rules as $dateset) {
-        if (is_int(array_keys($dateset)[0]) && $dateset[0] == "custom") {
+        if (isset($dateset[0]) && $dateset[0] == "custom") {
              $years = array_keys($dateset[1]);
              $legacy = true;
         }

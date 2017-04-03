@@ -56,3 +56,6 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 
 = 1.0.9 =
 * Fix remove bool(false) bool(false) from output with apologies
+
+= 1.1.0 =
+* Line 109 of 1.0.9 (wow eerie :-) ) triggers syntax error in older PHP verions that can't handle function returns_array()[array_key] syntax

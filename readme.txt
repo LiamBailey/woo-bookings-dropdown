@@ -1,7 +1,7 @@
 === WooCommerce Bookings Dropdown ===
 Contributors: Webby Scots
 Tags: WooCommerce, Bookings
-Donate link: https://ko-fi.com/webbyscots/
+Donate link: https://webbyscots.com/buy-me-a-coffee/
 Requires at least: 3.0.1
 Tested up to: 4.7
 Stable tag: trunk

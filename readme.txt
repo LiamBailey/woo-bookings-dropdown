@@ -60,3 +60,8 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 
 = 1.1.0 =
 * Line 109 of 1.0.9 (wow eerie :-) ) triggers syntax error in older PHP verions that can't handle function returns_array()[array_key] syntax
+
+= 1.1.1 =
+* **Fix** Problem with end of range date showing as available in the dropdown
+* **Fix** Dropdown not showing to replace calendar in some instances when it should
+* **Fix** Dropdown not updating correctly when resource dropdown changed

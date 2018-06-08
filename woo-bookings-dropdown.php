@@ -2,7 +2,7 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-Version: 1.1.0
+Version: 1.1.1
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 License: GNU General Public License v3.0
@@ -16,20 +16,21 @@ function wswp_refresh_dates() {
     check_ajax_referer('woo-bookings-dropdown-refreshing-dates', 'security');
     $product = wc_get_product($_REQUEST['product_id']);
     $booking_form = new WC_Booking_Form($product);
+
     switch ( $product->get_duration_unit() ) {
         case 'month' :
-            include_once( 'class-wc-booking-form-month-picker.php' );
-            $picker = new WC_Booking_Form_Month_Picker( $this );
+            include_once( WC_BOOKINGS_ABSPATH . 'includes/booking-form/class-wc-booking-form-month-picker.php' );
+            $picker = new WC_Booking_Form_Month_Picker( $booking_form );
             break;
         case 'day' :
         case 'night' :
-            include_once( 'class-wc-booking-form-date-picker.php' );
-            $picker = new WC_Booking_Form_Date_Picker( $this );
+            include_once( WC_BOOKINGS_ABSPATH . 'includes/booking-form/class-wc-booking-form-date-picker.php' );
+            $picker = new WC_Booking_Form_Date_Picker( $booking_form );
             break;
         case 'minute' :
         case 'hour' :
-            include_once( 'class-wc-booking-form-datetime-picker.php' );
-            $picker = new WC_Booking_Form_Datetime_Picker( $this );
+            include_once( WC_BOOKINGS_ABSPATH . 'includes/booking-form/class-wc-booking-form-datetime-picker.php' );
+            $picker = new WC_Booking_Form_Datetime_Picker( $booking_form );
             break;
         default :
             break;
@@ -71,7 +72,8 @@ function wswp_booking_form_fields($fields) {
     foreach($fields as $field) {
         $new_fields[$i] = $field;
         if ($field['type'] == "select") {
-            $selected_resource = reset(array_keys($field['options']));
+            $__keys = array_keys($field['options']);
+            $selected_resource = reset($__keys);
             if ($reset_options !== false) {
                 $new_fields[$reset_options]['options'] = wswp_build_options($field['availability_rules'][$selected_resource], $field);
             }
@@ -105,6 +107,7 @@ function wswp_build_options($rules, $field, $max_date) {
     global $wswp_dates_built;
     $dates = array();
     $non_date_ranges = false;
+
     foreach($rules as $dateset) {
         if (isset($dateset[0]) && $dateset[0] == "custom") {
              $years = array_keys($dateset[1]);
@@ -116,28 +119,35 @@ function wswp_build_options($rules, $field, $max_date) {
         }
         else {
             //Use default calendar if non-date range type ranges found. Exclude global ranges but only if date-range ranges found.
-            $non_date_ranges = (empty($dates) || $dateset['level'] != "global");
+            $non_date_ranges = (empty($years) || $dateset['level'] != "global");
         }
-        foreach($years as $year) {
-            $months = ($legacy) ? array_keys($dateset[1][$year]) : array_keys($dateset['range'][$year]);
-            foreach($months as $month) {
-                $days = ($legacy) ? array_keys($dateset[1][$year][$month]) : array_keys($dateset['range'][$year][$month]);
-                foreach($days as $day) {
-
-                    $dtime = strtotime($year."-".$month."-".$day);
-                    if ($dtime < strtotime("now"))
-                        continue;
-                    $js_date = date( 'Y-n-j', $dtime );
-                    if (isset($field['fully_booked_days'][$js_date]))
-                        continue;
-                    if ($dtime <= $max_date-1) {
-                        $dates[$dtime] = date_i18n("F jS, Y", $dtime);
-                    }
-                }
-            }
-
+        if ($legacy) {
+             $year = reset($years);
+             $months = array_keys($dateset[1][$year]);
+             $month = reset($months);
+             $days = array_keys($dateset[1][$year][$month]);
+             $day = reset($days);
+        }
+        else if ($dateset['type'] == "custom") {
+            $year = reset($years);
+            $months = array_keys($dateset['range'][$year]);
+            $month = reset($months);
+            $days = array_keys($dateset['range'][$year][$month]);
+            $day = reset($days);
+        }
+        $dtime = strtotime($year."-".$month."-".$day);
+        
+        if ($dtime < strtotime("now"))
+            continue;
+        $js_date = date( 'Y-n-j', $dtime );
+        if (isset($field['fully_booked_days'][$js_date]))
+             continue;
+        if ($dtime <= $max_date-1) {
+            $dates[$dtime] = date_i18n("F jS, Y", $dtime);
         }
     }
+    
+    
     ksort($dates);
     foreach($dates as $key => $date) {
         $dates[date("Y-m-d", $key)] = $date;
@@ -151,24 +161,26 @@ add_action('wp_footer', 'wswp_css_js');
 
 function wswp_css_js() {
     //adding in footer as not enough to justify new stylesheet and js file
-    ?><style type="text/css">
+    ?>
+    
+    <style type="text/css">
         .picker-hidden .picker, .picker-hidden legend {
             display:none;
         }
-        </style>
-        <script type='text/javascript'>
-            jQuery(function($) {
-                $(".picker-chooser").insertBefore('.wc-bookings-date-picker-date-fields');
-                $("select#wc_bookings_field_start_date").on('change', function() {
-				var selectedDate = $(this).val()
-				var selectedDateBreakdown = selectedDate.split("-");
+    </style>
+    <script type='text/javascript'>
+        jQuery(function($) {
+            $(".picker-chooser").insertBefore('.wc-bookings-date-picker-date-fields');
+            $("select#wc_bookings_field_start_date").on('change', function() {
+            var selectedDate = $(this).val()
+            var selectedDateBreakdown = selectedDate.split("-");
 
-				$( "input[name*='wc_bookings_field_start_date_year']" ).val( selectedDateBreakdown[0] );
-				$( "input[name*='wc_bookings_field_start_date_month']" ).val( selectedDateBreakdown[1] );
-				$( "input[name*='wc_bookings_field_start_date_day']" ).val( selectedDateBreakdown[2] );
-			});
-            });
+            $( "input[name*='wc_bookings_field_start_date_year']" ).val( selectedDateBreakdown[0] );
+            $( "input[name*='wc_bookings_field_start_date_month']" ).val( selectedDateBreakdown[1] );
+            $( "input[name*='wc_bookings_field_start_date_day']" ).val( selectedDateBreakdown[2] );
+        });
+        });
 
-            </script>
-            <?php
+    </script>
+    <?php
 }

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Woocommerce Bookings Dropdown
 Description: Swaps the date picker for a dropdown of dates
-Version: 1.1.1
+Version: 1.2.0
 Author: Webby Scots
 Author URI: http://webbyscots.com/
 License: GNU General Public License v3.0
@@ -65,25 +65,35 @@ add_filter('booking_form_fields', 'wswp_booking_form_fields');
 
 function wswp_booking_form_fields($fields) {
 
-    global $wswp_dates_built;
+    global $wswp_dates_built, $product;
     $i = 0;
     $selected_resource = 0;
     $reset_options = false;
+    $new_bookings = version_compare(WC_BOOKINGS_VERSION, '1.12.0', '>');
     foreach($fields as $field) {
         $new_fields[$i] = $field;
         if ($field['type'] == "select") {
+            if (!isset($field['availability_rules'])) {
+                $field['availability_rules'] = $product->get_availability_rules();
+            }
             $__keys = array_keys($field['options']);
             $selected_resource = reset($__keys);
             if ($reset_options !== false) {
-                $new_fields[$reset_options]['options'] = wswp_build_options($field['availability_rules'][$selected_resource], $field);
+                $availability_rules = $selected_resource < 1 || !isset($field['availability_rules'][$selected_resource]) ? $field['availability_rules'] : $field['availability_rules'][$selected_resource];
+                $new_fields[$reset_options]['options'] = $new_bookings ? wswp_build_new_options($availability_rules, $field) : wswp_build_options($field['availability_rules'][$selected_resource], $field);
             }
         }
         if ($field['type'] == "date-picker" && $wswp_dates_built === false)
         {
+            if (!isset($field['availability_rules'])) {
+                $field['availability_rules'] = $product->get_availability_rules();
+            }
             $max = $field['max_date'];
             $now = strtotime( 'midnight', current_time( 'timestamp' ) );
             $max_date = strtotime( "+{$max['value']} {$max['unit']}", $now );
-            $avail_dates = wswp_build_options($field['availability_rules'][$selected_resource], $field, $max_date);
+            $availability_rules = $selected_resource < 1 || !isset($field['availability_rules'][$selected_resource]) ? $field['availability_rules'] : $field['availability_rules'][$selected_resource];
+
+            $avail_dates = $new_bookings ? wswp_build_new_options($availability_rules, $field, $max_date) : wswp_build_options($field['availability_rules'][$selected_resource], $field, $max_date);
             if (!$avail_dates)
                 return $fields;
             $s = $i;
@@ -103,6 +113,45 @@ function wswp_booking_form_fields($fields) {
     return $new_fields;
 }
 
+function wswp_build_new_options($rules, $field, $max_date) {
+    global $wswp_dates_built;
+    $dates = array();
+    $years = false;
+    $non_date_ranges = false;
+    foreach($rules as $key => $dateset) {        
+        if ($dateset['type'] == "custom") {
+             $years = $dateset['range'];
+             $legacy = true;
+        } else if (!$years && $key == 'range') {
+            $years = $dateset;
+            $legacy = false;
+        }
+        if (empty($years)) {
+            continue;
+        }
+        $days = array();
+        foreach($years as $year => $months) {
+            foreach($months as $month => $days) {
+                foreach($days as $day => $avail) {
+                    $dtime = strtotime($year."-".$month."-".$day);
+                    $js_date = date( 'Y-n-j', $dtime );
+                    if ((bool)$avail == true && $dtime > time() && $dtime <= $max_date-1 && !isset($field['fully_booked_days'][$js_date])) {
+                        $dates[$dtime] = date_i18n("F jS, Y", $dtime);
+                    }
+                }
+            }
+        }
+   }
+    
+    ksort($dates);
+    foreach($dates as $key => $date) {
+        $dates[date("Y-m-d", $key)] = $date;
+        unset($dates[$key]);
+    }
+    $wswp_dates_built = true;
+    return empty($dates) ? false : array('' => __('Please Select','woo-bookings-dropdown')) + $dates;
+}
+
 function wswp_build_options($rules, $field, $max_date) {
     global $wswp_dates_built;
     $dates = array();
@@ -110,40 +159,27 @@ function wswp_build_options($rules, $field, $max_date) {
 
     foreach($rules as $dateset) {
         if (isset($dateset[0]) && $dateset[0] == "custom") {
-             $years = array_keys($dateset[1]);
+             $years = $dateset[1];
              $legacy = true;
         }
         else if ($dateset['type'] == "custom") {
-            $years = array_keys($dateset['range']);
+            $years = $dateset['range'];
             $legacy = false;
         }
-        else {
-            //Use default calendar if non-date range type ranges found. Exclude global ranges but only if date-range ranges found.
-            $non_date_ranges = (empty($years) || $dateset['level'] != "global");
-        }
-        if ($legacy) {
-             $year = reset($years);
-             $months = array_keys($dateset[1][$year]);
-             $month = reset($months);
-             $days = array_keys($dateset[1][$year][$month]);
-             $day = reset($days);
-        }
-        else if ($dateset['type'] == "custom") {
-            $year = reset($years);
-            $months = array_keys($dateset['range'][$year]);
-            $month = reset($months);
-            $days = array_keys($dateset['range'][$year][$month]);
-            $day = reset($days);
-        }
-        $dtime = strtotime($year."-".$month."-".$day);
-        
-        if ($dtime < strtotime("now"))
+        if (empty($years)) {
             continue;
-        $js_date = date( 'Y-n-j', $dtime );
-        if (isset($field['fully_booked_days'][$js_date]))
-             continue;
-        if ($dtime <= $max_date-1) {
-            $dates[$dtime] = date_i18n("F jS, Y", $dtime);
+        }
+        $days = array();
+        foreach($years as $year => $months) {
+            foreach($months as $month => $days) {
+                foreach($days as $day => $avail) {
+                    $dtime = strtotime($year."-".$month."-".$day);
+                    $js_date = date( 'Y-n-j', $dtime );
+                    if ((bool)$avail == true && $dtime > time() && $dtime <= $max_date-1 && !isset($field['fully_booked_days'][$js_date])) {
+                        $dates[$dtime] = date_i18n("F jS, Y", $dtime);
+                    }
+                }
+            }
         }
     }
     

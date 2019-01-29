@@ -65,3 +65,6 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 * **Fix** Problem with end of range date showing as available in the dropdown
 * **Fix** Dropdown not showing to replace calendar in some instances when it should
 * **Fix** Dropdown not updating correctly when resource dropdown changed
+
+= 1.2.0 =
+* **Update** Now works with latest version of WooCommerce Bookings 1.12.2 as of this update

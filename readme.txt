@@ -2,8 +2,8 @@
 Contributors: Webby Scots
 Tags: WooCommerce, Bookings
 Donate link: https://www.paypal.me/webbyscots/10
-Requires at least: 3.0.1
-Tested up to: 4.7
+Requires at least: 3.0.0
+Tested up to: 5.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -68,3 +68,4 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 
 = 1.2.0 =
 * **Update** Now works with latest version of WooCommerce Bookings 1.12.2 as of this update
+* bump tested up to

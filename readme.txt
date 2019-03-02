@@ -69,3 +69,7 @@ Swaps the WooCommerce Bookings datepicker calendar for a dropdown list of availa
 = 1.2.0 =
 * **Update** Now works with latest version of WooCommerce Bookings 1.12.2 as of this update
 * bump tested up to
+
+=1.2.1 = 
+* **Fix** 1.2.0 was showing all days in a block
+* **Tweak** Make code only run on frontend

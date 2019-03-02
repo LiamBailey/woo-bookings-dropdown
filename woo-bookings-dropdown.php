@@ -64,7 +64,9 @@ $wswp_dates_built = false;
 add_filter('booking_form_fields', 'wswp_booking_form_fields');
 
 function wswp_booking_form_fields($fields) {
-
+    if (is_admin()) {
+        return;
+    }
     global $wswp_dates_built, $product;
     $i = 0;
     $selected_resource = 0;
